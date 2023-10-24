@@ -4,11 +4,13 @@ import (
 	"errors"
 	"net"
 	"net/http"
+	"os"
 	"syscall"
 
 	"github.com/gorilla/mux"
 	"github.com/gorilla/websocket"
 	"github.com/sirupsen/logrus"
+	"github.com/spf13/cast"
 )
 
 func must(err error) {
@@ -38,6 +40,22 @@ func setup() {
 }
 
 func main() {
+	args := os.Args
+	webSocketPort := 8080
+	if len(args) > 0 {
+		// args[0] is the name of the executable
+		if len(args) > 2 {
+			logrus.Fatalf("usage: leds <port number>")
+		}
+		if len(args) == 2 {
+			portStr := args[1]
+			newPort, err := cast.ToIntE(portStr)
+			if err != nil || newPort < 0 || newPort > 65535 {
+				logrus.Fatalf("the provided port '%s' is invalid", portStr)
+			}
+			webSocketPort = newPort
+		}
+	}
 	logrus.Infof("main start")
 	setup()
 
@@ -136,8 +154,8 @@ func main() {
 		}
 	})
 	router.PathPrefix("/").Handler(http.FileServer(http.Dir("public")))
-	logrus.Infof("listening on port 8080 -> http://127.0.0.1:8080/")
-	if err := http.ListenAndServe(":8080", router); err != nil {
+	logrus.Infof("listening at -> http://127.0.0.1:%d/", webSocketPort)
+	if err := http.ListenAndServe(":"+cast.ToString(webSocketPort), router); err != nil {
 		panic(err)
 	}
 	logrus.Infof("main end")

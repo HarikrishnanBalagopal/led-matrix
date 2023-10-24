@@ -18,7 +18,8 @@ const draw = (ctx, _t) => {
     // }
     ctx.fillStyle = 'black';
     ctx.fillRect(0, 0, W, H);
-    ctx.fillStyle = '#0000ff';
+    const tt1 = fract(t / 3);
+    ctx.fillStyle = tt1 > 0.6 ? '#0000ff' : (tt1 > 0.3 ? '#00ff00' : '#ff0000');
     ctx.font = "13px serif";
     const text = "Happy Dussehra!!";
     const text_len = text.length * 6;
